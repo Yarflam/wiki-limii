@@ -62,22 +62,24 @@ PROTOS = np.array([c[1] for c in CLASSES], float)
 GROUPS = {
     "oceane":          ("#363afe", "Océan Silvaïc", "eau",
                         "L'Océan Silvaïc borde Limii à l'est et au sud."),
-    "fleuve":          ("#363afe", "Le Sil-Eron (fleuve & estuaire)", "eau",
+    "fleuve":          ("#363afe", "Fleuve Sil-Eron", "eau",
                         "Le fleuve Sil-Eron rejoint la mer après avoir traversé la ville en canaux."),
     "canaux":          ("#363afe", "Canaux du Sil-Eron", "eau",
                         "Canaux creusés dans la ville — leur tracé dessine un presque parfait carré."),
     "reg":             ("#06f7ba", "Désert de pierre (reg)", "desert",
-                        "Reg : désert de pierre à l'ouest et au nord de la ville-forteresse."),
-    "dunes":           ("#21ffc6", "Désert de sable & dunes", "desert",
-                        "Dunes de sable ondulant autour de la ville."),
+                        "Reg : désert de pierre à l'intérieur de la muraille."),
+    "dunes":           ("#21ffc6", "Dunes de sable", "desert",
+                        "Dunes de sable à l'extérieur de la muraille."),
+    "plages":          ("#edd9a0", "Plages", "plage",
+                        "Plages le long de l'Océan Silvaïc."),
     "monticules":      ("#29ba9b", "Monticules rocheux", "relief",
                         "Buttes rocheuses isolées, comme dans le Nevada."),
     "vestiges":        ("#29ba9b", "Vestiges de l'ancienne muraille", "vestige",
                         "Ruines des anciens remparts, rongées par le désert."),
     "foret":           ("#369448", "Forêt équatoriale", "foret",
                         "La seule forêt équatoriale de la région (à nommer précisément)."),
-    "olive":           ("#a1a547", "Zones résidentielles & commerçantes", "habitation",
-                        "Quartiers résidentiels et quartiers des commerçans, proches du port de pêche manghan."),
+    "olive":           ("#a1a547", "Zones résidentielles", "habitation",
+                        "Quartiers résidentiels de la presqu'île."),
     "beige":           ("#b49692", "Habitations & Commerces", "habitation",
                         "Le quartier ouest, simple mais vivant (nom provisoire)."),
     "brun":            ("#a27651", "Espaces verts & campus universitaire", "parc",
@@ -86,14 +88,14 @@ GROUPS = {
                         "Le quartier chic de Limii."),
     "galerie":         ("#3b3e33", "La Galerie", "monument",
                         "Le cœur culturel de Limii (à développer)."),
+    "cbd":             ("#8a8560", "La Cité des Songes (CBD)", "habitation",
+                        "Centre-ville de Limii, juste au sud de La Galerie."),
+    "techno":          ("#6b7568", "Centre techno-industriel", "industrie",
+                        "Pôle technique et industriel de Limii, au sud de la Cité des Songes."),
     "ancienne_muraille": ("#757a65", "Ancienne muraille", "fortification",
                         "Les restes du premier rempart, le long de l'autoroute de ceinture."),
-    "muraille":        ("#757a65", "La Muraille", "fortification",
-                        "Le quartier des remparts. Limii est une énorme forteresse qui combat "
-                        "les forces du désert et les brigands. Au nord se trouve la Cité des "
-                        "Songes (CBD), au sud le centre techno-industriel."),
-    "militaire":       ("#434254", "Zone militaire & docks", "militaire",
-                        "Zone militaire fortifiée ; les docks servent la marine près de la mer."),
+    "militaire":       ("#434254", "Zone militaire", "militaire",
+                        "Zone militaire fortifiée au sud de la ville."),
     "autoroute":       ("#ee28b1", "Autoroute de ceinture (6×6 voies)", "route",
                         "Autoroute périurbaine en boucle fermée, environ 6×6 voies."),
     "muraille_ouest":  ("#166753", "La Muraille — remparts ouest", "fortification",
@@ -102,27 +104,31 @@ GROUPS = {
 
 # Ordre de dessin (le 1er est le plus bas)
 DRAW_ORDER = [
-    "oceane", "fleuve", "reg", "dunes", "monticules", "vestiges", "foret",
+    "oceane", "fleuve", "reg", "dunes", "plages",
+    "monticules", "vestiges", "foret",
     "olive", "beige", "brun", "jaune", "galerie",
-    "ancienne_muraille", "muraille", "militaire",
+    "cbd", "techno", "ancienne_muraille", "militaire",
     "autoroute", "canaux", "muraille_ouest",
 ]
 
 LEGEND = [
     {"label": "Océan Silvaïc", "color": "#363afe"},
-    {"label": "Sil-Eron : fleuve, estuaire & canaux", "color": "#363afe"},
-    {"label": "Désert de sable & dunes", "color": "#21ffc6"},
+    {"label": "Sil-Eron : fleuve & canaux", "color": "#363afe"},
+    {"label": "Plages", "color": "#edd9a0"},
+    {"label": "Dunes de sable", "color": "#21ffc6"},
     {"label": "Désert de pierre (reg)", "color": "#06f7ba"},
     {"label": "Monticules rocheux", "color": "#29ba9b"},
     {"label": "Vestiges de l'ancienne muraille", "color": "#29ba9b"},
     {"label": "Forêt équatoriale", "color": "#369448"},
-    {"label": "Zones résidentielles & commerçantes", "color": "#a1a547"},
+    {"label": "Zones résidentielles", "color": "#a1a547"},
     {"label": "Habitations & Commerces", "color": "#b49692"},
     {"label": "Espaces verts & campus universitaire", "color": "#a27651"},
     {"label": "Quartier Bourgeois", "color": "#e9fe5d"},
     {"label": "La Galerie", "color": "#3b3e33"},
-    {"label": "La Muraille & l'ancienne muraille", "color": "#757a65"},
-    {"label": "Zone militaire & docks", "color": "#434254"},
+    {"label": "La Cité des Songes (CBD)", "color": "#8a8560"},
+    {"label": "Centre techno-industriel", "color": "#6b7568"},
+    {"label": "Ancienne muraille", "color": "#757a65"},
+    {"label": "Zone militaire", "color": "#434254"},
     {"label": "Autoroute de ceinture", "color": "#ee28b1"},
     {"label": "Remparts ouest (ligne & bastions)", "color": "#166753"},
 ]
@@ -156,16 +162,49 @@ def split_water(blue):
 
 
 def split_river(ocean, H, W):
-    """Isole le Sil-Eron : partie du bleu océanique dans le couloir sud."""
+    """Isole le Sil-Eron (surcouche posée sur l'océan complet, même couleur,
+    pour éviter toute coupure visible entre les deux polygones)."""
     Y, X = np.mgrid[0:H, 0:W]
-    region = (X >= 430) & (X <= 745) & (Y >= 620)
+    region = (X >= 430) & (X <= 760) & (Y >= 600)
     cand = ocean & region
     lab, n = ndi.label(cand, structure=STRUCT8)
     fleuve = np.zeros_like(ocean)
     for i in range(1, n + 1):
         if (lab == i).sum() >= 800:
             fleuve |= lab == i
-    return fleuve, ocean & ~fleuve
+    return fleuve, ocean  # océan complet : le fleuve se superpose
+
+
+def axe_divider(axe):
+    """Ligne de la muraille ouest prolongée jusqu'au bord bas de l'image :
+    elle sépare l'extérieur (ouest) de l'intérieur (est) de la muraille."""
+    divider = ndi.binary_dilation(axe, iterations=6)
+    ys, xs = np.where(axe)
+    y_end, x_end = ys.max(), int(xs[ys.argmax()])
+    divider[y_end:, max(0, x_end - 6):x_end + 7] = True
+    return divider
+
+
+def east_of(divider):
+    """Composante la plus à l'est du complément du séparateur = intérieur."""
+    lab, n = ndi.label(~divider, structure=STRUCT8)
+    best, best_cx = None, -1.0
+    for i in range(1, n + 1):
+        cx = np.where(lab == i)[1].mean()
+        if cx > best_cx:
+            best_cx, best = cx, i
+    return lab == best
+
+
+def split_desert(turquoise, ocean, interior, plage_width=30):
+    """Bande côtière = plages ; à l'extérieur de la muraille = dunes ;
+    à l'intérieur = désert de pierre (reg)."""
+    dist = ndi.distance_transform_edt(~ocean)
+    plages = turquoise & (dist < plage_width)
+    reste = turquoise & ~plages
+    reg = reste & interior
+    dunes = reste & ~interior
+    return reg, dunes, plages
 
 
 def split_herbiers(herbiers, y_cut=450):
@@ -177,19 +216,32 @@ def split_herbiers(herbiers, y_cut=450):
 
 
 def split_quartier(quartier, autoroute):
-    """Fragment collé à l'autoroute = ancienne muraille ; le reste = la muraille."""
+    """Fragment collé à l'autoroute = ancienne muraille ; grand fragment
+    nord = Cité des Songes (CBD) ; grands fragments sud = techno-industriel."""
     dist = ndi.distance_transform_edt(~autoroute)
     lab, n = ndi.label(quartier, structure=STRUCT8)
-    ancienne, muraille = np.zeros_like(quartier), np.zeros_like(quartier)
+    ancienne = np.zeros_like(quartier)
+    cbd = np.zeros_like(quartier)
+    techno = np.zeros_like(quartier)
+    big = []
     for i in range(1, n + 1):
         comp = lab == i
         if comp.sum() < MIN_AREA:
             continue
         if dist[comp].min() < 15:
             ancienne |= comp
+        elif comp.sum() >= 2000:
+            cy, cx = ndi.center_of_mass(comp)
+            big.append((cy, cx, i))
         else:
-            muraille |= comp
-    return ancienne, muraille
+            ancienne |= comp
+    big.sort()
+    for rank, (cy, cx, i) in enumerate(big):
+        if rank == 0:
+            cbd |= lab == i
+        else:
+            techno |= lab == i
+    return ancienne, cbd, techno
 
 
 def contour_of(mask, tol):
@@ -241,16 +293,19 @@ def main():
     ocean, canaux = split_water(masks["eau"])
     fleuve, oceane = split_river(ocean, H, W)
     monticules, vestiges = split_herbiers(masks["herbiers"])
-    ancienne, muraille = split_quartier(masks["quartier"], masks["autoroute"])
+    ancienne, cbd, techno = split_quartier(masks["quartier"], masks["autoroute"])
+    turquoise = masks["lagune"] | masks["lagune_c"]
+    interior = east_of(axe_divider(masks["axe"]))
+    reg, dunes, plages = split_desert(turquoise, ocean, interior)
 
     groups = {
         "oceane": oceane, "fleuve": fleuve, "canaux": canaux,
-        "reg": masks["lagune"], "dunes": masks["lagune_c"],
+        "reg": reg, "dunes": dunes, "plages": plages,
         "monticules": monticules, "vestiges": vestiges,
         "foret": masks["foret"], "olive": masks["olive"],
         "beige": masks["beige"], "brun": masks["brun"], "jaune": masks["jaune"],
         "galerie": masks["centre"],
-        "ancienne_muraille": ancienne, "muraille": muraille,
+        "ancienne_muraille": ancienne, "cbd": cbd, "techno": techno,
         "militaire": masks["massif"],
         "autoroute": masks["autoroute"], "muraille_ouest": masks["axe"],
     }
@@ -275,38 +330,25 @@ def main():
                 "color": color,
                 "stroke": color,
                 "strokeWidth": 0 if ztype in ("route", "eau") else 1,
-                "popup": popup + (f" (fragment n° {k+1})" if k else ""),
+                "popup": popup,
                 "coords": poly["coords"],
                 "holes": poly["holes"],
             })
 
     # ----- points d'intérêt -----
-    points = [{
-        "name": "Port de pêche (peuple Manghans)", "xy": [708, 692],
-        "popup": "Port de pêche tenu par le peuple Manghans, à proximité "
-                 "des quartiers des commerçans (presqu'île).",
-    }]
-    # CBD & centre techno-industriel : centroids des deux grands fragments de la muraille
-    qlab, qn = ndi.label(muraille, structure=STRUCT8)
-    big = []
-    for i in range(1, qn + 1):
-        comp = qlab == i
-        if comp.sum() >= 2000:
-            cy, cx = ndi.center_of_mass(comp)
-            big.append((cy, cx))
-    big.sort()
-    if big:
-        cy, cx = big[0]
-        points.append({"name": "La Cité des Songes (CBD)",
-                       "xy": [int(round(cx)), int(round(cy))],
-                       "popup": "Centre-ville de Limii, au cœur de la Muraille, "
-                                "juste au sud de La Galerie."})
-    if len(big) > 1:
-        cy, cx = big[-1]
-        points.append({"name": "Centre techno-industriel",
-                       "xy": [int(round(cx)), int(round(cy))],
-                       "popup": "Pôle technique et industriel de Limii, au sud "
-                                "de la Cité des Songes."})
+    points = [
+        {"name": "Marina", "xy": [708, 692],
+         "popup": "La marina de la presqu'île (description à venir)."},
+        {"name": "Quartiers des commerçants", "xy": [655, 688],
+         "popup": "Les quartiers commerçans, à l'ouest de la marina."},
+    ]
+    # docks : pointe est de la zone militaire, côté mer
+    ys, xs = np.where(masks["massif"])
+    sud = ys > 780
+    if sud.any():
+        points.append({"name": "Docks",
+                       "xy": [int(xs[sud].max()) + 12, int(ys[sud][xs[sud].argmax()])],
+                       "popup": "Les docks de la zone militaire, près de la mer."})
     # embouchure du Sil-Eron
     zone = np.zeros_like(fleuve)
     zone[640:900, 480:720] = fleuve[640:900, 480:720]
