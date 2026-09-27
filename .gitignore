@@ -1,2 +1,5 @@
 # Image de travail temporaire (ne pas commiter)
 Limii_map.jpg
+
+# Image de controle generee par tools/trace_map.py
+map-data.js.classif.png

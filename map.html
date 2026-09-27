@@ -16,6 +16,7 @@
     background: #fff; padding: 10px 12px; border-radius: 6px;
     box-shadow: 0 1px 5px rgba(0,0,0,.4);
     font: 13px/1.5 system-ui, sans-serif; color: #222;
+    max-height: 70vh; overflow-y: auto;
   }
   .legend h4 { margin: 0 0 6px; font-size: 13px; }
   .legend i {
@@ -34,7 +35,9 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-<!-- Données de la carte (éditer ce fichier pour ajouter des éléments) -->
+<!-- Données de la carte — GÉNÉRÉES par tools/trace_map.py (ne pas éditer) ;
+     pour ajouter un point d'intérêt, modifiez le script ou ajoutez un
+     marker via la console : L.marker(...).addTo(map) -->
 <script src="map-data.js"></script>
 
 <script>
@@ -42,7 +45,7 @@
   "use strict";
 
   var M = LIMII_DATA.meta;
-  var METERS_PER_UNIT = 1000 / M.pixelsPerKm; // 18 px = 1 km → ≈ 55,6 m par unité
+  var METERS_PER_UNIT = 1000 / M.pixelsPerKm; // ≈ 55,6 m par unité
 
   /* Plan de coordonnées « plat » et INFINI :
      L.CRS.Simple est infini par défaut et, comme aucun maxBounds
@@ -68,7 +71,7 @@
     // volontairement PAS de maxBounds → déplacement infini
   });
 
-  L.control.attribution({ prefix: "Univers de Limii — fond d'origine : carte dessinée (paint.net)" })
+  L.control.attribution({ prefix: "Univers de Limii — fond vectorisé d'après la carte dessinée (paint.net)" })
    .addTo(map);
 
   /* Les données utilisent les pixels de l'image d'origine :
@@ -77,24 +80,29 @@
   function path(coords) { return coords.map(toLatLng); }
 
   var zonesLayer  = L.layerGroup();
-  var roadsLayer  = L.layerGroup();
   var pointsLayer = L.layerGroup();
 
   var TYPE_LABEL = {
     eau: "Zone aquatique",
     lagune: "Lagune",
+    basfonds: "Herbiers / bas-fonds",
     foret: "Forêt",
-    desert: "Désert / terres sèches",
+    desert: "Terres sèches / désert",
     habitation: "Habitations",
     indefini: "Zone à identifier",
-    terre: "Terres"
+    route: "Tracé (route / axe)"
   };
 
-  /* ---------- Zones (dans l'ordre du fichier : la 1re est sous les autres) ---------- */
+  /* ---------- Zones ----------
+     Dessinées dans l'ordre du fichier (la 1re est sous les autres).
+     coords = contour extérieur ; holes = trous éventuels (anneaux).
+     Les tracés (autoroute, artères, axe) sont des polygones pleins
+     reproduisant exactement le trait de la carte d'origine.       */
   LIMII_DATA.zones.forEach(function (z) {
-    L.polygon(path(z.coords), {
+    var latlngs = [path(z.coords)].concat((z.holes || []).map(path));
+    L.polygon(latlngs, {
       color: z.stroke || z.color,
-      weight: (z.strokeWidth != null ? z.strokeWidth : 1.5),
+      weight: (z.strokeWidth != null ? z.strokeWidth : 1),
       opacity: 0.8,
       fillColor: z.color,
       fillOpacity: (z.fillOpacity != null ? z.fillOpacity : 1),
@@ -104,31 +112,6 @@
       "<div class='zone-tag'>" + (TYPE_LABEL[z.type] || z.type) + "</div>" +
       (z.popup ? "<p>" + z.popup + "</p>" : "")
     ).addTo(zonesLayer);
-  });
-
-  /* ---------- Routes ---------- */
-  LIMII_DATA.roads.forEach(function (r) {
-    var opts = { lineJoin: "round", lineCap: "round" };
-    if (r.casing) {
-      L.polyline(path(r.coords), L.extend({}, opts, {
-        color: r.casing, weight: r.weight + 4, opacity: 0.9
-      })).addTo(roadsLayer);
-    }
-    L.polyline(path(r.coords), L.extend({}, opts, {
-      color: r.color, weight: r.weight, opacity: (r.opacity != null ? r.opacity : 0.95)
-    })).bindPopup(
-      "<h3>" + r.name + "</h3>" + (r.popup ? "<p>" + r.popup + "</p>" : "")
-    ).addTo(roadsLayer);
-
-    /* Bornes / stations éventuelles */
-    (r.stations || []).forEach(function (s, i) {
-      L.circleMarker(toLatLng(s), {
-        radius: 6, color: "#0e3a20", weight: 2,
-        fillColor: r.color, fillOpacity: 1
-      }).bindPopup(
-        "<h3>" + r.name + "</h3><p>Borne n° " + (i + 1) + " (à nommer)</p>"
-      ).addTo(pointsLayer);
-    });
   });
 
   /* ---------- Points d'intérêt ---------- */
@@ -142,7 +125,6 @@
   });
 
   zonesLayer.addTo(map);
-  roadsLayer.addTo(map);
   pointsLayer.addTo(map);
 
   /* ---------- Échelle réelle (km) ---------- */
@@ -162,9 +144,8 @@
 
   /* ---------- Calques ---------- */
   L.control.layers(null, {
-    "Zones": zonesLayer,
-    "Routes": roadsLayer,
-    "Points": pointsLayer
+    "Carte (zones & tracés)": zonesLayer,
+    "Points d'intérêt": pointsLayer
   }, { collapsed: true }).addTo(map);
 
   /* ---------- Vue initiale sur la carte connue ---------- */
