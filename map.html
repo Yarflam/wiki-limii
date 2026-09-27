@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carte de Limii des Sables</title>
+
+<!-- Leaflet (CDN) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
+<style>
+  html, body, #map { height: 100%; margin: 0; background: #cfd8e3; }
+
+  .legend {
+    background: #fff; padding: 10px 12px; border-radius: 6px;
+    box-shadow: 0 1px 5px rgba(0,0,0,.4);
+    font: 13px/1.5 system-ui, sans-serif; color: #222;
+  }
+  .legend h4 { margin: 0 0 6px; font-size: 13px; }
+  .legend i {
+    display: inline-block; width: 14px; height: 14px;
+    margin-right: 8px; border-radius: 3px; vertical-align: -2px;
+  }
+
+  .leaflet-popup-content h3 { margin: 0 0 4px; font-size: 15px; }
+  .leaflet-popup-content p  { margin: 4px 0 0; }
+  .zone-tag { opacity: .7; font-size: 12px; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<!-- Données de la carte (éditer ce fichier pour ajouter des éléments) -->
+<script src="map-data.js"></script>
+
+<script>
+(function () {
+  "use strict";
+
+  var M = LIMII_DATA.meta;
+  var METERS_PER_UNIT = 1000 / M.pixelsPerKm; // 18 px = 1 km → ≈ 55,6 m par unité
+
+  /* Plan de coordonnées « plat » et INFINI :
+     L.CRS.Simple est infini par défaut et, comme aucun maxBounds
+     n'est fixé, la carte peut être déplacée sans limite dans
+     toutes les directions (on peut donc agrandir le monde plus
+     tard sans changer la configuration).                        */
+  var LimiiCRS = L.extend({}, L.CRS.Simple, {
+    /* Permet à l'échelle graphique de s'afficher en km réels
+       (900 px ≈ 50 km de haut sur la carte d'origine).          */
+    distance: function (a, b) {
+      return L.CRS.Simple.distance(a, b) * METERS_PER_UNIT;
+    }
+  });
+
+  var map = L.map("map", {
+    crs: LimiiCRS,
+    minZoom: -1,
+    maxZoom: 7,
+    zoomSnap: 0.25,
+    zoomDelta: 0.5,
+    wheelPxPerZoomLevel: 90,
+    attributionControl: false
+    // volontairement PAS de maxBounds → déplacement infini
+  });
+
+  L.control.attribution({ prefix: "Univers de Limii — fond d'origine : carte dessinée (paint.net)" })
+   .addTo(map);
+
+  /* Les données utilisent les pixels de l'image d'origine :
+     [x, y] avec x → droite et y → bas.                          */
+  function toLatLng(p) { return [-p[1], p[0]]; }
+  function path(coords) { return coords.map(toLatLng); }
+
+  var zonesLayer  = L.layerGroup();
+  var roadsLayer  = L.layerGroup();
+  var pointsLayer = L.layerGroup();
+
+  var TYPE_LABEL = {
+    eau: "Zone aquatique",
+    lagune: "Lagune",
+    foret: "Forêt",
+    desert: "Désert / terres sèches",
+    habitation: "Habitations",
+    indefini: "Zone à identifier",
+    terre: "Terres"
+  };
+
+  /* ---------- Zones (dans l'ordre du fichier : la 1re est sous les autres) ---------- */
+  LIMII_DATA.zones.forEach(function (z) {
+    L.polygon(path(z.coords), {
+      color: z.stroke || z.color,
+      weight: (z.strokeWidth != null ? z.strokeWidth : 1.5),
+      opacity: 0.8,
+      fillColor: z.color,
+      fillOpacity: (z.fillOpacity != null ? z.fillOpacity : 1),
+      smoothFactor: 1
+    }).bindPopup(
+      "<h3>" + z.name + "</h3>" +
+      "<div class='zone-tag'>" + (TYPE_LABEL[z.type] || z.type) + "</div>" +
+      (z.popup ? "<p>" + z.popup + "</p>" : "")
+    ).addTo(zonesLayer);
+  });
+
+  /* ---------- Routes ---------- */
+  LIMII_DATA.roads.forEach(function (r) {
+    var opts = { lineJoin: "round", lineCap: "round" };
+    if (r.casing) {
+      L.polyline(path(r.coords), L.extend({}, opts, {
+        color: r.casing, weight: r.weight + 4, opacity: 0.9
+      })).addTo(roadsLayer);
+    }
+    L.polyline(path(r.coords), L.extend({}, opts, {
+      color: r.color, weight: r.weight, opacity: (r.opacity != null ? r.opacity : 0.95)
+    })).bindPopup(
+      "<h3>" + r.name + "</h3>" + (r.popup ? "<p>" + r.popup + "</p>" : "")
+    ).addTo(roadsLayer);
+
+    /* Bornes / stations éventuelles */
+    (r.stations || []).forEach(function (s, i) {
+      L.circleMarker(toLatLng(s), {
+        radius: 6, color: "#0e3a20", weight: 2,
+        fillColor: r.color, fillOpacity: 1
+      }).bindPopup(
+        "<h3>" + r.name + "</h3><p>Borne n° " + (i + 1) + " (à nommer)</p>"
+      ).addTo(pointsLayer);
+    });
+  });
+
+  /* ---------- Points d'intérêt ---------- */
+  LIMII_DATA.points.forEach(function (p) {
+    L.circleMarker(toLatLng(p.xy), {
+      radius: 7, color: "#20242c", weight: 2,
+      fillColor: p.color || "#ffd54a", fillOpacity: 1
+    }).bindPopup(
+      "<h3>" + p.name + "</h3>" + (p.popup ? "<p>" + p.popup + "</p>" : "")
+    ).addTo(pointsLayer);
+  });
+
+  zonesLayer.addTo(map);
+  roadsLayer.addTo(map);
+  pointsLayer.addTo(map);
+
+  /* ---------- Échelle réelle (km) ---------- */
+  L.control.scale({ metric: true, imperial: false, maxWidth: 160 }).addTo(map);
+
+  /* ---------- Légende ---------- */
+  var legend = L.control({ position: "bottomright" });
+  legend.onAdd = function () {
+    var div = L.DomUtil.create("div", "legend");
+    div.innerHTML = "<h4>" + M.name + "</h4>" +
+      LIMII_DATA.legend.map(function (l) {
+        return "<div><i style='background:" + l.color + "'></i>" + l.label + "</div>";
+      }).join("");
+    return div;
+  };
+  legend.addTo(map);
+
+  /* ---------- Calques ---------- */
+  L.control.layers(null, {
+    "Zones": zonesLayer,
+    "Routes": roadsLayer,
+    "Points": pointsLayer
+  }, { collapsed: true }).addTo(map);
+
+  /* ---------- Vue initiale sur la carte connue ---------- */
+  var southWest = toLatLng([0, M.height]);        // coin bas-gauche
+  var northEast = toLatLng([M.width, 0]);         // coin haut-droit
+  map.fitBounds(L.latLngBounds(southWest, northEast), { padding: [20, 20] });
+
+  /* Astuce — pour comparer avec l'image d'origine en surimpression
+     (le fichier Limii_map.jpg n'est pas versionné, décommentez en
+     local uniquement) :
+  L.imageOverlay("Limii_map.jpg", L.latLngBounds(southWest, northEast), { opacity: 0.5 }).addTo(map);
+  */
+})();
+</script>
+</body>
+</html>
